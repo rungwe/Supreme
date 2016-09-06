@@ -124,7 +124,7 @@ namespace Supreme.Controllers
             int count = db.Products.Count(b => b.sku == productData.sku);
             if (count != 0)
             {
-                return StatusCode(HttpStatusCode.NotAcceptable);
+                return BadRequest("Duplicate sku not allowed");
             }
             Product product = new Product
             {

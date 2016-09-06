@@ -13,21 +13,54 @@ using Supreme.Models;
 
 namespace Supreme.Controllers
 {
+    /// <summary>
+    /// This encapsulates products in an order
+    /// </summary>
     public class OrderProductsController : ApiController
     {
-        /// <summary>
-        /// This encapsulates products in an oder
-        /// </summary>
+       
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: api/OrderProducts
         /// <summary>
         /// Neccessary only for debugging
         /// </summary>
-        /// <returns></returns>
-        public IQueryable<OrderProduct> GetOrderProducts()
+        /// <returns>200</returns>
+        public IQueryable<OrderProductDTO> GetOrderProducts()
         {
-            return db.OrderProducts;
+            return from b in db.OrderProducts
+                   select
+                        new OrderProductDTO
+                        {
+                        productId = b.productId,
+                        productName = b.product.name,
+                        price = b.price,
+                        productDescription = b.product.description,
+                        quantity = b.quantity
+
+                        };
+        }
+
+        /// <summary>
+        /// Retrieve products of an order
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <returns>200</returns>
+        [Route("api/GetOrderProducts")]
+        [HttpGet]
+        public IQueryable<OrderProductDTO> GetOrderProducts(int orderId)
+        {
+            return from b in db.OrderProducts.Where(b=>b.orderId==orderId) select
+                   new OrderProductDTO
+                   {
+                       productId = b.productId,
+                       productName = b.product.name,
+                       price = b.price,
+                       productDescription = b.product.description,
+                       quantity = b.quantity
+                       
+                   }
+                   ;
         }
 
         // GET: api/OrderProducts/5
@@ -35,35 +68,27 @@ namespace Supreme.Controllers
         /// Get order product by Id
         /// </summary>
         /// <param name="id"></param>
-        /// <returns></returns>
+        /// <returns>200</returns>
         [ResponseType(typeof(OrderProduct))]
-        public async Task<IHttpActionResult> GetOrderProduct(int id)
+        public async Task<IHttpActionResult> GetOrderProductInstance(int id)
         {
-            OrderProduct orderProduct = await db.OrderProducts.FindAsync(id);
-            if (orderProduct == null)
+            OrderProduct b = await db.OrderProducts.FindAsync(id);
+            if (b == null)
             {
                 return NotFound();
             }
-
-            return Ok(orderProduct);
-        }
-        /// <summary>
-        /// retrieves order products, not implemented
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        [ResponseType(typeof(OrderProduct))]
-        [Route("GetOrderProducts")]
-        public async Task<IHttpActionResult> GetOrderProducts(int id)
-        {
-            OrderProduct orderProduct = await db.OrderProducts.FindAsync(id);
-            if (orderProduct == null)
+            OrderProductDTO orderProduct = new OrderProductDTO
             {
-                return NotFound();
-            }
+                productId = b.productId,
+                productName = b.product.name,
+                price = b.price,
+                productDescription = b.product.description,
+                quantity = b.quantity
 
+            };
             return Ok(orderProduct);
         }
+       
 
         // PUT: api/OrderProducts/5
         /// <summary>

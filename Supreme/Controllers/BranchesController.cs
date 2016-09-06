@@ -76,24 +76,33 @@ namespace Supreme.Controllers
 
         // PUT: api/Branches/5
         /// <summary>
-        /// Edit Branch Information, not yet tested, Accountants authorised
+        /// Assign a sales rep to a branch
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="branch"></param>
+        /// <param name="branchId"></param>
+        /// <param name="salesRepId"></param>
         /// <returns></returns>
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutBranch(int id, Branch branch)
+        public async Task<IHttpActionResult> PutBranch(int branchId, int salesRepId)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+            Branch branch = await db.Branches.FindAsync(salesRepId);
+            SalesRep salesRep = await db.SalesReps.FindAsync(salesRepId);
 
-            if (id != branch.id)
+            if (salesRep == null)
             {
-                return BadRequest();
+                return BadRequest("Sales rep does not exist");
             }
 
+
+            if (branch==null)
+            {
+                return BadRequest("branch does not exist");
+            }
+
+            branch.salesRepId = salesRepId;
             db.Entry(branch).State = EntityState.Modified;
 
             try
@@ -102,14 +111,8 @@ namespace Supreme.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!BranchExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                  throw;
+                
             }
 
             return StatusCode(HttpStatusCode.NoContent);

@@ -154,6 +154,22 @@ namespace Supreme.Controllers
             deliveryNote.status = "delivered";
             db.Entry(deliveryNote).State = EntityState.Modified;
 
+            
+            Order order = await db.Orders.FindAsync(deliveryNote.orderId);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            order.status = "delivered";
+            db.Entry(order).State = EntityState.Modified;
+
+            Invoice invoice = await db.Invoices.Where(b => b.orderid == order.id).SingleOrDefaultAsync();
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
             try
             {
                 await db.SaveChangesAsync();
@@ -161,16 +177,6 @@ namespace Supreme.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 return StatusCode(HttpStatusCode.ExpectationFailed);
-            }
-            Order order = await db.Orders.FindAsync(deliveryNote.orderId);
-            if (order == null)
-            {
-                return NotFound();
-            }
-            Invoice invoice = await db.Invoices.Where(b => b.orderid == order.id).SingleOrDefaultAsync();
-            if (invoice == null)
-            {
-                return NotFound();
             }
             //send delivery note email
             string subject = "Supreme Brands Delivery Note";
@@ -215,7 +221,7 @@ namespace Supreme.Controllers
             
             Email.sendEmail(order.branch.email, invoiceSubject, invoiceBody);
 
-            return Ok(invoiceBody);
+            return Ok();
         }
        
 

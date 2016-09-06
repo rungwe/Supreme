@@ -32,6 +32,7 @@ namespace Supreme.Controllers
                          firstname = b.profile.firstname,
                          lastname = b.profile.lastname,
                          middlename = b.profile.middlename,
+                         id= b.id
 
                      };
              return sales;

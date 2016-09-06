@@ -21,6 +21,10 @@ namespace Supreme.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: api/Profiles
+        /// <summary>
+        /// Get all the users in the system
+        /// </summary>
+        /// <returns></returns>
         [Authorize(Roles = "administrator")]
         public IQueryable<Profile> GetProfiles()
         {
@@ -30,6 +34,11 @@ namespace Supreme.Controllers
 
 
         // GET: api/Profiles/5
+        /// <summary>
+        /// get employees profile by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [ResponseType(typeof(Profile))]
         public async Task<IHttpActionResult> GetProfile(int id)
         {
@@ -42,6 +51,10 @@ namespace Supreme.Controllers
             return Ok(profile);
         }
 
+        /// <summary>
+        /// Get the profile of the current logged in user
+        /// </summary>
+        /// <returns></returns>
         [ResponseType(typeof(Profile))]
         [Route("api/myProfile")]
         [HttpGet]
@@ -59,6 +72,12 @@ namespace Supreme.Controllers
         }
 
         // PUT: api/Profiles/5
+        /// <summary>
+        /// Edit profile, not yet refined
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="profile"></param>
+        /// <returns></returns>
         [ResponseType(typeof(void))]
         public async Task<IHttpActionResult> PutProfile(int id, Profile profile)
         {
@@ -93,32 +112,23 @@ namespace Supreme.Controllers
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        // POST: api/Profiles
-        [ResponseType(typeof(Profile))]
-        public async Task<IHttpActionResult> PostProfile(Profile profile)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            db.Profiles.Add(profile);
-            await db.SaveChangesAsync();
-
-            return CreatedAtRoute("DefaultApi", new { id = profile.id }, profile);
-        }
-
         // DELETE: api/Profiles/5
+        /// <summary>
+        /// Lazy deletion
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [ResponseType(typeof(Profile))]
         public async Task<IHttpActionResult> DeleteProfile(int id)
         {
-            Profile profile = await db.Profiles.FindAsync(id);
+            Profile profile = db.Profiles.Find(id);
             if (profile == null)
             {
                 return NotFound();
             }
 
-            db.Profiles.Remove(profile);
+            profile.status = "suspended";
+            db.Entry(profile).State = EntityState.Modified;
             await db.SaveChangesAsync();
 
             return Ok(profile);
