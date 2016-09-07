@@ -207,7 +207,7 @@ namespace Supreme.Controllers
         public IQueryable<OrderDTO> AllDeliveredOrders()
         {
 
-            var order = from d in db.Orders.Where(d => d.status == "processing").OrderByDescending(d => d.date)
+            var order = from d in db.Orders.Where(d => d.status == "delivered").OrderByDescending(d => d.date)
                         select new OrderDTO
                         {
                             id = d.id,

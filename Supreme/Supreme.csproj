@@ -255,6 +255,7 @@
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Accountant.cs" />
+    <Compile Include="Models\AccountantDTO.cs" />
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Administrator.cs" />
@@ -277,6 +278,7 @@
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\Invoice.cs" />
     <Compile Include="Models\InvoiceCreateDTO.cs" />
+    <Compile Include="Models\InvoiceDTO.cs" />
     <Compile Include="Models\Merchant.cs" />
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\OrderCreateDTO.cs" />

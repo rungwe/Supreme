@@ -190,7 +190,7 @@ namespace Supreme.Controllers
             double total = 0;
             foreach(OrderProduct item in order.orderProducts)
             {
-                double cost = item.price * item.price;
+                double cost = item.price * item.quantity;
                 body += "<tr> <td> "+item.product.name+" </td><td>"+item.quantity+" </td> <td> "+item.price+" </td><td> "+cost+" </td></tr>";
                 total += cost;
             }
@@ -212,7 +212,7 @@ namespace Supreme.Controllers
            
             foreach (OrderProduct item in order.orderProducts)
             {
-                double cost = item.price * item.price;
+                double cost = item.price * item.quantity;
                 invoiceBody += "<tr> <td> " + item.product.name + " </td><td>" + item.quantity + " </td> <td> " + item.price + " </td ><td> " + cost + " </td></tr>";
                 
             }

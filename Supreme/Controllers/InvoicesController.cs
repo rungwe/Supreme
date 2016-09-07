@@ -22,9 +22,34 @@ namespace Supreme.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: api/Invoices
-        public IQueryable<Invoice> GetInvoices()
+        /// <summary>
+        /// Get all invoices, only accountants and administrators are authorised
+        /// </summary>
+        /// <returns></returns>
+        [Authorize(Roles ="administrator,accountant")]
+        public IQueryable<InvoiceDTO> GetInvoices()
         {
-            return db.Invoices;
+            return from b in db.Invoices select 
+                   
+                   new InvoiceDTO {
+                       accountant = new AccountantDTO { Id=b.accountant_id,firstname=b.account.profile.firstname, lastname= b.account.profile.lastname,middlename=b.account.profile.middlename},
+                       id= b.id,
+                       date = b.date,
+                       invoiceNumber = b.invoiceNumber,
+                       orderid = b.orderid,
+                       order = new OrderDTO
+                       {
+                           id = b.orderid,
+                           price = b.order.price,
+                           date = b.order.date,
+                           status = b.order.status,
+                           salesRep = new SalesRepDTO() { id = b.order.salesRep.id, firstname = b.order.salesRep.profile.firstname, middlename = b.order.salesRep.profile.middlename, lastname = b.order.salesRep.profile.lastname },
+                           branch = new BranchDTO() { id = b.order.branch.id, address = b.order.branch.address, name = b.order.branch.name, email = b.order.branch.email, regionId = b.order.branch.regionId, telephone = b.order.branch.telephone },
+                           customer = new CustomerDTO { id = b.order.branch.customer.id, tradingName = b.order.branch.customer.tradingName, registrationDate = b.order.branch.customer.registrationDate },
+                          
+                       },
+                       status= b.status
+                   };
         }
 
         // GET: api/Invoices/5
@@ -134,10 +159,10 @@ namespace Supreme.Controllers
             string reg = User.Identity.GetUserId();
             Order order = await db.Orders.FindAsync(invoiceData.orderid);
             Accountant accountant = db.Accountants.Where(b => b.user_id == reg).SingleOrDefault();
-            int inv = await db.Invoices.CountAsync(b => b.invoiceNumber== invoiceData.invoiceNumber);
+            int inv = await db.Invoices.CountAsync(b => b.invoiceNumber== invoiceData.invoiceNumber || b.orderid==order.id);
             if (inv != 0)
             {
-                return BadRequest("Invoice number exists");
+                return BadRequest("Invoice number exists or invoice for this order was already made");
             }
             if (accountant == null)
             {
