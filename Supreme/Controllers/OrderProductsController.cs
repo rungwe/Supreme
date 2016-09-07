@@ -131,25 +131,7 @@ namespace Supreme.Controllers
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        // POST: api/OrderProducts
-        /// <summary>
-        /// Creates a product for an order
-        /// </summary>
-        /// <param name="orderProduct"></param>
-        /// <returns></returns>
-        [ResponseType(typeof(OrderProduct))]
-        public async Task<IHttpActionResult> PostOrderProduct(OrderProduct orderProduct)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            db.OrderProducts.Add(orderProduct);
-            await db.SaveChangesAsync();
-
-            return CreatedAtRoute("DefaultApi", new { id = orderProduct.id }, orderProduct);
-        }
+      
 
         // DELETE: api/OrderProducts/5
         /// <summary>

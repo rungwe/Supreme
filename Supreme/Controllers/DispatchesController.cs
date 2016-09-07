@@ -160,7 +160,7 @@ namespace Supreme.Controllers
         /// <returns></returns>
         [ResponseType(typeof(ICollection<OrderDTO>))]
         [Authorize]
-        [Route("api/AllDispachedOrders")]
+        [Route("api/AllDispatchedOrders")]
         [HttpGet]
         public IQueryable<OrderDTO> AllDispatchedOrders()
         {

@@ -253,6 +253,10 @@
     <Compile Include="Migrations\201608271753594_Initial2.Designer.cs">
       <DependentUpon>201608271753594_Initial2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201609071343390_DeliveryNote_addOrders.cs" />
+    <Compile Include="Migrations\201609071343390_DeliveryNote_addOrders.Designer.cs">
+      <DependentUpon>201609071343390_DeliveryNote_addOrders.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Accountant.cs" />
     <Compile Include="Models\AccountantDTO.cs" />
@@ -382,6 +386,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201608271753594_Initial2.resx">
       <DependentUpon>201608271753594_Initial2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201609071343390_DeliveryNote_addOrders.resx">
+      <DependentUpon>201609071343390_DeliveryNote_addOrders.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

@@ -170,7 +170,36 @@ namespace Supreme.Controllers
 
             return order;
         }
-        
+
+
+
+        /// <summary>
+        /// this retrieves all the orders that have been approved and invoiced by the accountant, only stock_controllers, accountants and administrators are authorized
+        /// </summary>
+        /// <returns>200</returns>
+        [ResponseType(typeof(ICollection<OrderDTO>))]
+        [Authorize(Roles = "stock_controller,administrator,accountant")]
+        [Route("api/AllInProcessingDispatchOrders")]
+        [HttpGet]
+        public IQueryable<OrderDTO> AllInProcessingInDispatchOrders()
+        {
+
+            var order = from d in db.Orders.Where(d => d.status == "processing").OrderByDescending(d => d.date)
+                        select new OrderDTO
+                        {
+                            id = d.id,
+                            status = d.status,
+                            branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
+                            customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
+                            date = d.date,
+                        };
+
+            return order;
+        }
+
+
+
+
         /// <summary>
         /// This retrieves all delivered orders initated by the current logged in sales rep, authorized to only sales reps
         /// </summary>
@@ -271,6 +300,90 @@ namespace Supreme.Controllers
         }
 
 
+
+        /// <summary>
+        /// View all the orders in transit, only the accountants and administrators are authorized
+        /// </summary>
+        /// <returns>200</returns>
+        [ResponseType(typeof(ICollection<OrderDTO>))]
+        [Authorize(Roles = "administrator,accountant,stock_controller,driver")]
+        [Route("api/AllTransitOrders")]
+        [HttpGet]
+        public IQueryable<OrderDTO> AllTransitOrders()
+        {
+
+            var order = from d in db.Orders.Where(d => d.status == "transit").OrderByDescending(d => d.date)
+                        select new OrderDTO
+                        {
+                            id = d.id,
+                            status = d.status,
+                            branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
+                            customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
+                            date = d.date,
+                        };
+
+            return order;
+        }
+
+        /// <summary>
+        /// View all the orders in transit for the current logged in driver, only the drivers are authorized
+        /// </summary>
+        /// <returns>200</returns>
+        [ResponseType(typeof(ICollection<OrderDTO>))]
+        [Authorize(Roles = "driver")]
+        [Route("api/MyTransitOrders")]
+        [HttpGet]
+        public IQueryable<OrderDTO> MyTransitOrders()
+        {
+            string reg = User.Identity.GetUserId();
+
+            Driver driver = db.Drivers.Where(b => b.profile.userid == reg).SingleOrDefault();
+            if (driver == null)
+            {
+                return null;
+            }
+            var order = from d in db.DeliveryNotes.Where(d => d.order.status == "transit" && d.driverId==driver.id).OrderByDescending(d => d.date)
+                        select new OrderDTO
+                        {
+                            id = d.order.id,
+                            status = d.order.status,
+                            branch = new BranchDTO { id = d.order.branch.id, address = d.order.branch.address, name = d.order.branch.name, email = d.order.branch.email, regionId = d.order.branch.regionId, telephone = d.order.branch.telephone },
+                            customer = new CustomerDTO { id = d.order.branch.customer.id, tradingName = d.order.branch.customer.tradingName, registrationDate = d.order.branch.customer.registrationDate },
+                            date = d.order.date,
+                        };
+
+            return order;
+        }
+
+        /// <summary>
+        /// View all the orders in transit for the current logged in driver, only the drivers are authorized
+        /// </summary>
+        /// <returns>200</returns>
+        [ResponseType(typeof(ICollection<OrderDTO>))]
+        [Authorize(Roles = "driver")]
+        [Route("api/DriverMyDeliveredOrders")]
+        [HttpGet]
+        public IQueryable<OrderDTO> DriverMyDeliveredOrders()
+        {
+            string reg = User.Identity.GetUserId();
+
+            Driver driver = db.Drivers.Where(b => b.profile.userid == reg).SingleOrDefault();
+            if (driver == null)
+            {
+                return null;
+            }
+            var order = from d in db.DeliveryNotes.Where(d => d.order.status == "delivered" && d.driverId == driver.id).OrderByDescending(d => d.date)
+                        select new OrderDTO
+                        {
+                            id = d.order.id,
+                            status = d.order.status,
+                            branch = new BranchDTO { id = d.order.branch.id, address = d.order.branch.address, name = d.order.branch.name, email = d.order.branch.email, regionId = d.order.branch.regionId, telephone = d.order.branch.telephone },
+                            customer = new CustomerDTO { id = d.order.branch.customer.id, tradingName = d.order.branch.customer.tradingName, registrationDate = d.order.branch.customer.registrationDate },
+                            date = d.order.date,
+                        };
+
+            return order;
+        }
 
         /*8
         // PUT: api/Orders/5

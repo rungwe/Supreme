@@ -130,26 +130,25 @@ namespace Supreme.Controllers
         
         //PUT: api/DeliveryNotes/5
         /// <summary>
-        /// Edits a delivery note, not yet refined
+        /// This is used by the driver to tell the system that the order has been delivered, it will send an email to the customer with the delivery note and invoice
         /// </summary>
-        /// <param name="deliveryNoteId"></param>
+        /// <param name="orderId"></param>
         /// <returns></returns>
         [ResponseType(typeof(void))]
         [Route("api/OrderDelivered")]
-        public async Task<IHttpActionResult> PutDeliveryNote(int deliveryNoteId)
+        public async Task<IHttpActionResult> PutDeliveryNote(int orderId)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (!DeliveryNoteExists(deliveryNoteId))
+
+            DeliveryNote deliveryNote = await db.DeliveryNotes.Where(b=>b.orderId==orderId).SingleOrDefaultAsync();
+            if (deliveryNote == null)
             {
-                return NotFound();
+                return BadRequest("Delivery note not created");
             }
-
-
-            DeliveryNote deliveryNote = await db.DeliveryNotes.FindAsync(deliveryNoteId);
 
             deliveryNote.status = "delivered";
             db.Entry(deliveryNote).State = EntityState.Modified;
@@ -243,6 +242,9 @@ namespace Supreme.Controllers
             Driver driver = db.Drivers.Where(b => b.profile.userid == reg).SingleOrDefault();
             DeliveryNote deliveryNote = new DeliveryNote() { orderId = deliveryNoteData.orderId,driverId=driver.id,date= DateTime.Now,status="pending" };
             db.DeliveryNotes.Add(deliveryNote);
+            Order order =await db.Orders.FindAsync(deliveryNote.orderId);
+            order.status = "transit";
+            db.Entry(order).State = EntityState.Modified;
             await db.SaveChangesAsync();
 
             return Ok();

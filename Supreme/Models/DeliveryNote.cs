@@ -22,7 +22,7 @@ namespace Supreme.Models
 
         public virtual Driver driver { set; get; }
 
-        //public virtual Order order { set; get; }
+        public virtual Order order { set; get; }
 
     }
 }
