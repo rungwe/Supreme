@@ -158,7 +158,7 @@ namespace Supreme.Controllers
         public IQueryable<OrderDTO> AllInProcessOrders()
         {
 
-            var order = from d in db.Orders.Where(d => d.status != "pending").OrderByDescending(d => d.date)
+            var order = from d in db.Orders.Where(d => d.status != "pending" && d.status!="delivered").OrderByDescending(d => d.date)
                         select new OrderDTO
                         {
                             id = d.id,
@@ -484,7 +484,7 @@ namespace Supreme.Controllers
                     return BadRequest("This retailer does not have this product");
                 }
 
-                currentPrice = orderItem.quantity * price.amount;
+                currentPrice = price.amount;
                 totalPrice += currentPrice;
 
                 

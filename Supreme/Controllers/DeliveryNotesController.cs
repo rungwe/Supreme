@@ -159,7 +159,10 @@ namespace Supreme.Controllers
             {
                 return NotFound();
             }
-
+            if (order.status == "delivered")
+            {
+               return BadRequest("Order has been delivered already");
+            }
             order.status = "delivered";
             db.Entry(order).State = EntityState.Modified;
 
