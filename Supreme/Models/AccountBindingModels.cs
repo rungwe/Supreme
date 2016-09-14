@@ -58,6 +58,9 @@ namespace Supreme.Models
         [Required]
         public string lastname { set; get; }
 
+        [Required]
+        public string phonenumber { set; get; }
+
         public string middlename { set; get; }
 
         public string access_key { set; get; }

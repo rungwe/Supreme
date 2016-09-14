@@ -11,7 +11,7 @@ namespace Supreme.Models
         [Key]
         public int id { set; get; }
 
-        string user_id { set; get; }
+        public string user_id { set; get; }
 
         public int profileId { set; get; }
 

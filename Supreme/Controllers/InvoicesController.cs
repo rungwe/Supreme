@@ -20,7 +20,7 @@ namespace Supreme.Controllers
     public class InvoicesController : ApiController
     {
         private ApplicationDbContext db = new ApplicationDbContext();
-
+        private static readonly object Lock = new object();
         // GET: api/Invoices
         /// <summary>
         /// Get all invoices, only accountants and administrators are authorised
@@ -29,6 +29,7 @@ namespace Supreme.Controllers
         [Authorize(Roles ="administrator,accountant")]
         public IQueryable<InvoiceDTO> GetInvoices()
         {
+
             return from b in db.Invoices select 
                    
                    new InvoiceDTO {
@@ -159,33 +160,65 @@ namespace Supreme.Controllers
             string reg = User.Identity.GetUserId();
             Order order = await db.Orders.FindAsync(invoiceData.orderid);
             Accountant accountant = db.Accountants.Where(b => b.user_id == reg).SingleOrDefault();
-            int inv = await db.Invoices.CountAsync(b => b.invoiceNumber== invoiceData.invoiceNumber || b.orderid==order.id);
+            /*int inv = await db.Invoices.CountAsync(b => b.invoiceNumber== invoiceData.invoiceNumber || b.orderid==order.id);
             if (inv != 0)
             {
                 return BadRequest("Invoice number exists or invoice for this order was already made");
-            }
+            }**/
             if (accountant == null)
             {
                 
                 return BadRequest("Accountant does not exist");
             }
 
-            
+            TimeZoneInfo timeInfo = TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time");
+            DateTime userTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeInfo);
+
             Invoice invoice = new Invoice
             {
                 accountant_id = accountant.id,
-                date = DateTime.Now,
-                invoiceNumber= invoiceData.invoiceNumber,
+                date = userTime,
+               // invoiceNumber= invoiceData.invoiceNumber,
                 orderid = invoiceData.orderid,
                 status = "not_paid",
                
             };
-            order.status = "processing";
-            db.Entry(order).State = EntityState.Modified;
-            db.Invoices.Add(invoice);
-            await db.SaveChangesAsync();
 
-            return Ok();
+            // critical section generate invoice number
+            lock (Lock)
+            {
+                
+                string year = DateTime.Now.Year.ToString();
+                string reference = "INV-"+year+"-";
+                int invo = db.Invoices.Count();
+                if(invo == 0)
+                {
+                    invo += 1;
+                    reference += String.Format("{0:00000}", invo);
+                }
+                else
+                {
+                    invo = db.Invoices.Count(b => b.invoiceNumber.Substring(4, 4) == year);
+                    invo += 1;
+                    reference += String.Format("{0:00000}", invo);
+                }
+                while (db.Invoices.Count(d => d.invoiceNumber == reference) != 0)
+                {
+                    reference = "INV-" + year + "-"+ String.Format("{0:00000}", ++invo); 
+                }
+                order.status = "processing";
+                order.warehouseLocation = invoiceData.warehouseLocation;
+                order.invoiceNumber = reference;
+                db.Entry(order).State = EntityState.Modified;
+                invoice.invoiceNumber = reference;
+                db.Invoices.Add(invoice);
+                db.SaveChanges();
+
+            }
+
+            
+
+            return Ok(invoice.invoiceNumber);
         }
 
         // DELETE: api/Invoices/5

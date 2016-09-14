@@ -11,6 +11,10 @@ namespace Supreme.Models
         [Key]
         public int id { get; set; }
 
+        public string orderNumber { set; get; }
+
+        public string invoiceNumber { set; get; }
+
         public DateTime date { set; get; }
 
         public int salesRepId { set; get; }
@@ -22,6 +26,8 @@ namespace Supreme.Models
         public string status { set; get; }
 
         public int branchId { set; get; }
+
+        public string warehouseLocation { set; get; }
 
         public virtual Branch branch { set; get; }
 

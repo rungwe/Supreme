@@ -16,12 +16,17 @@ namespace Supreme.Models
 
         public string status { set; get; }
 
+        public string orderNumber { set; get; }
+
+        public string invoiceNumber { set; get; }
+
         public SalesRepDTO salesRep { get; set; }
 
         public CustomerDTO customer { set; get; }
 
         public BranchDTO branch { set; get; }
 
-        public ICollection<OrderProduct> orderItems { set; get; }
+        public string warehouseLocation { set; get; }
+        //public ICollection<OrderProduct> orderItems { set; get; }
     }
 }

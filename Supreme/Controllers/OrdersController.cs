@@ -17,6 +17,7 @@ namespace Supreme.Controllers
     public class OrdersController : ApiController
     {
         private ApplicationDbContext db = new ApplicationDbContext();
+        private static readonly object Lock = new object();
 
         // GET: api/Orders
         /// <summary>
@@ -33,7 +34,9 @@ namespace Supreme.Controllers
                 status = b.status,
                 salesRep = new SalesRepDTO () {id= b.salesRep.id, firstname=b.salesRep.profile.firstname, middlename = b.salesRep.profile.middlename, lastname= b.salesRep.profile.lastname},
                 branch = new BranchDTO() { id=b.branch.id, address = b.branch.address, name= b.branch.name, email= b.branch.email, regionId= b.branch.regionId,telephone= b.branch.telephone},
-                customer = new CustomerDTO { id=b.branch.customer.id, tradingName = b.branch.customer.tradingName, registrationDate= b.branch.customer.registrationDate }
+                customer = new CustomerDTO { id=b.branch.customer.id, tradingName = b.branch.customer.tradingName, registrationDate= b.branch.customer.registrationDate },
+                invoiceNumber= b.invoiceNumber,
+                orderNumber=b.orderNumber
             };
 
             return orders;
@@ -64,7 +67,8 @@ namespace Supreme.Controllers
                 salesRep = new SalesRepDTO() { id = b.salesRep.id, firstname = b.salesRep.profile.firstname, middlename = b.salesRep.profile.middlename, lastname = b.salesRep.profile.lastname },
                 branch = new BranchDTO() { id = b.branch.id, address = b.branch.address, name = b.branch.name, email = b.branch.email, regionId = b.branch.regionId, telephone = b.branch.telephone },
                 customer = new CustomerDTO { id = b.branch.customer.id, tradingName = b.branch.customer.tradingName, registrationDate = b.branch.customer.registrationDate },
-                
+                invoiceNumber = b.invoiceNumber,
+                orderNumber = b.orderNumber
             };
             return Ok(order);
         }
@@ -90,7 +94,37 @@ namespace Supreme.Controllers
                              branch = new BranchDTO { id=d.branch.id, address=d.branch.address, name=d.branch.name,email=d.branch.email,regionId=d.branch.regionId,telephone=d.branch.telephone},
                              customer= new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
                              date = d.date,
+                             orderNumber = d.orderNumber
                          };
+
+            return Ok(order);
+        }
+
+
+        /// <summary>
+        /// This retrieves all the pending orders for the current Sales Rep, only authorized to Sales Rep
+        /// </summary>
+        /// <returns>200</returns>
+        [ResponseType(typeof(ICollection<OrderDTO>))]
+        [Authorize(Roles = "merchant")]
+        [Route("api/MerchantMyPendingOrders")]
+        [HttpGet]
+        public async Task<IHttpActionResult> MerchantMyPendingOrders()
+        {
+            
+            string reg = User.Identity.GetUserId();
+            Merchant merchant = await db.Merchants.Where(b => b.profile.userid == reg).SingleOrDefaultAsync();
+            //SalesRep salesRep = await db.SalesReps.Where(b => b.userid == reg).SingleOrDefaultAsync();
+            var order = from d in db.Orders.Where(d => d.branch.merchantId == merchant.id && d.status == "pending").OrderByDescending(d => d.date)
+                        select new OrderDTO()
+                        {
+                            id = d.id,
+                            status = d.status,
+                            branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
+                            customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
+                            date = d.date,
+                            orderNumber = d.orderNumber
+                        };
 
             return Ok(order);
         }
@@ -115,7 +149,9 @@ namespace Supreme.Controllers
                             customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
                             date = d.date,
                             price=d.price,
-                            salesRep = new SalesRepDTO() { id=d.salesRepId,firstname=d.salesRep.profile.firstname,lastname= d.salesRep.profile.lastname,middlename= d.salesRep.profile.middlename }
+                            salesRep = new SalesRepDTO() { id=d.salesRepId,firstname=d.salesRep.profile.firstname,lastname= d.salesRep.profile.lastname,middlename= d.salesRep.profile.middlename },
+                           
+                            orderNumber = d.orderNumber
                         };
 
             return order;
@@ -133,7 +169,7 @@ namespace Supreme.Controllers
         {
             string reg = User.Identity.GetUserId();
             SalesRep salesRep = await db.SalesReps.Where(b => b.userid == reg).SingleOrDefaultAsync();
-            var order =from d in db.Orders.Where(d => d.salesRepId == salesRep.id && d.status != "pending").OrderByDescending(d => d.date)
+            var order =from d in db.Orders.Where(d => d.salesRepId == salesRep.id && d.status != "pending" && d.status!="delivered").OrderByDescending(d => d.date)
                        select new OrderDTO()
                        {
                            id = d.id,
@@ -141,11 +177,45 @@ namespace Supreme.Controllers
                            branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
                            customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
                            date = d.date,
-                           
+                           invoiceNumber = d.invoiceNumber,
+                           orderNumber = d.orderNumber
+
                        };
 
             return Ok(order);
         }
+
+
+
+        /// <summary>
+        /// this returns all the order under processing for the current logged in Merchant, these are orders made by all his Sales Reps, only sales reps are authorized
+        /// </summary>
+        /// <returns>200</returns>
+        [ResponseType(typeof(ICollection<OrderDTO>))]
+        [Authorize(Roles = "merchant")]
+        [Route("api/MerchantMyOrdersInProcess")]
+        [HttpGet]
+        public async Task<IHttpActionResult> MerchantMyOrdersInProcess()
+        {
+            string reg = User.Identity.GetUserId();
+            Merchant merchant = await db.Merchants.Where(b => b.profile.userid == reg).SingleOrDefaultAsync();
+            var order = from d in db.Orders.Where(d => d.branch.merchantId == merchant.id && d.status != "pending" && d.status != "delivered").OrderByDescending(d => d.date)
+                        select new OrderDTO()
+                        {
+                            id = d.id,
+                            status = d.status,
+                            branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
+                            customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
+                            date = d.date,
+                            invoiceNumber = d.invoiceNumber,
+                            orderNumber = d.orderNumber
+
+                        };
+
+            return Ok(order);
+        }
+
+
 
         /// <summary>
         /// this retrieves all the orders that have been approved and invoiced by the accountant, only stock_controllers, accountants and administrators are authorized
@@ -166,6 +236,8 @@ namespace Supreme.Controllers
                             branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
                             customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
                             date = d.date,
+                            invoiceNumber = d.invoiceNumber,
+                            orderNumber = d.orderNumber
                         };
 
             return order;
@@ -192,11 +264,41 @@ namespace Supreme.Controllers
                             branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
                             customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
                             date = d.date,
+                            invoiceNumber = d.invoiceNumber,
+                            orderNumber = d.orderNumber
                         };
 
             return order;
         }
 
+
+
+        /// <summary>
+        /// this retrieves all the orders that have been approved and invoiced by the accountant for the specific warehouse, stock controllers authorized
+        /// </summary>
+        /// <returns>200</returns>
+        [ResponseType(typeof(ICollection<OrderDTO>))]
+        [Authorize(Roles = "stock_controller,administrator,accountant")]
+        [Route("api/StockControllerProcessingInDispatchOrders")]
+        [HttpGet]
+        public async Task<IHttpActionResult> StockControllerProcessingInDispatchOrders()
+        {
+            string reg = User.Identity.GetUserId();
+            StockManager manager = await db.StockManagers.Where(b => b.profile.userid == reg).SingleOrDefaultAsync();
+            var order =  from d in db.Orders.Where(d => d.status == "processing" && d.warehouseLocation==manager.warehouseLocation).OrderByDescending(d => d.date)
+                        select new OrderDTO
+                        {
+                            id = d.id,
+                            status = d.status,
+                            branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
+                            customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
+                            date = d.date,
+                            invoiceNumber = d.invoiceNumber,
+                            orderNumber = d.orderNumber
+                        };
+
+            return Ok(order);
+        }
 
 
 
@@ -220,10 +322,41 @@ namespace Supreme.Controllers
                             branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
                             customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
                             date = d.date,
+                            invoiceNumber = d.invoiceNumber,
+                            orderNumber = d.orderNumber
                         };
 
             return Ok(order);
         }
+
+
+        /// <summary>
+        /// This retrieves all delivered orders initated by the current logged in sales rep, authorized to only sales reps
+        /// </summary>
+        /// <returns>200</returns>
+        [ResponseType(typeof(ICollection<OrderDTO>))]
+        [Authorize(Roles = "merchant")]
+        [Route("api/GetMerchantDeliveredOrders")]
+        [HttpGet]
+        public async Task<IHttpActionResult> GetMerchantDeliveredOrders()
+        {
+            string reg = User.Identity.GetUserId();
+            Merchant merchant = await db.Merchants.Where(b => b.profile.userid == reg).SingleOrDefaultAsync();
+            var order = from d in db.Orders.Where(d => d.branch.merchantId == merchant.id && d.status == "delivered").OrderByDescending(d => d.date)
+                        select new OrderDTO()
+                        {
+                            id = d.id,
+                            status = d.status,
+                            branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
+                            customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
+                            date = d.date,
+                            invoiceNumber = d.invoiceNumber,
+                            orderNumber = d.orderNumber
+                        };
+
+            return Ok(order);
+        }
+
 
         /// <summary>
         /// It returns all delivered orders
@@ -244,6 +377,8 @@ namespace Supreme.Controllers
                             branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
                             customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
                             date = d.date,
+                            invoiceNumber = d.invoiceNumber,
+                            orderNumber = d.orderNumber
                         };
 
             return order;
@@ -270,6 +405,8 @@ namespace Supreme.Controllers
                             branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
                             customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
                             date = d.date,
+                            invoiceNumber = d.invoiceNumber,
+                            orderNumber = d.orderNumber
                         };
 
             return Ok(order);
@@ -294,6 +431,8 @@ namespace Supreme.Controllers
                             branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
                             customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
                             date = d.date,
+                            invoiceNumber = d.invoiceNumber,
+                            orderNumber = d.orderNumber
                         };
 
             return order;
@@ -320,6 +459,8 @@ namespace Supreme.Controllers
                             branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
                             customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
                             date = d.date,
+                            invoiceNumber = d.invoiceNumber,
+                            orderNumber = d.orderNumber
                         };
 
             return order;
@@ -350,6 +491,8 @@ namespace Supreme.Controllers
                             branch = new BranchDTO { id = d.order.branch.id, address = d.order.branch.address, name = d.order.branch.name, email = d.order.branch.email, regionId = d.order.branch.regionId, telephone = d.order.branch.telephone },
                             customer = new CustomerDTO { id = d.order.branch.customer.id, tradingName = d.order.branch.customer.tradingName, registrationDate = d.order.branch.customer.registrationDate },
                             date = d.order.date,
+                            invoiceNumber = d.order.invoiceNumber,
+                            orderNumber = d.order.orderNumber
                         };
 
             return order;
@@ -380,6 +523,8 @@ namespace Supreme.Controllers
                             branch = new BranchDTO { id = d.order.branch.id, address = d.order.branch.address, name = d.order.branch.name, email = d.order.branch.email, regionId = d.order.branch.regionId, telephone = d.order.branch.telephone },
                             customer = new CustomerDTO { id = d.order.branch.customer.id, tradingName = d.order.branch.customer.tradingName, registrationDate = d.order.branch.customer.registrationDate },
                             date = d.order.date,
+                            invoiceNumber = d.order.invoiceNumber,
+                            orderNumber = d.order.orderNumber
                         };
 
             return order;
@@ -447,16 +592,20 @@ namespace Supreme.Controllers
                 return BadRequest("Customer does not Exist");
             }
 
-           
+           if (customer.id != branch.customerId)
+            {
+                return BadRequest("This branch does not belong to this customer");
+            }
 
             //ProductPrice price = await db.ProductPrices.Where(b => b.productId==product.id).SingleOrDefaultAsync();
         
             string reg = User.Identity.GetUserId();
             SalesRep sales = await db.SalesReps.Where(a =>a.userid == reg).SingleAsync();
-
+            TimeZoneInfo timeInfo = TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time");
+            DateTime userTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeInfo);
             Order order = new Order
             {
-                date = DateTime.Now,
+                date = userTime,
                 customerId = branch.customerId,
                 branchId = orderData.branchId,
                 status = "pending",
@@ -485,19 +634,45 @@ namespace Supreme.Controllers
                 }
 
                 currentPrice = price.amount;
-                totalPrice += currentPrice;
+                totalPrice += currentPrice*orderItem.quantity;
 
                 
                 orderItems.Add(new OrderProduct { orderId = odr.id, price = currentPrice, productId = orderItem.productId, quantity = orderItem.quantity });
                 //db.OrderProducts.
 
             }
-            odr.price = totalPrice;
-            db.Entry(odr).State = EntityState.Modified;
-            db.OrderProducts.AddRange(orderItems);
-            await db.SaveChangesAsync();
+            lock (Lock)
+            {
 
-            return StatusCode(HttpStatusCode.Created);
+                string year = DateTime.Now.Year.ToString();
+                string reference = "PO-" + year + "-";
+                int ordNum = db.Orders.Count();
+                if (ordNum == 0)
+                {
+                    ordNum += 1;
+                    reference += String.Format("{0:00000}", ordNum);
+                }
+                else
+                {
+                    ordNum = db.Orders.Count(b => b.orderNumber.Substring(3, 4) == year);
+                    ordNum += 1;
+                    reference += String.Format("{0:00000}", ordNum);
+                }
+                while (db.Orders.Count(d => d.orderNumber == reference) != 0)
+                {
+                    reference = "INV-" + year + "-" + String.Format("{0:00000}", ++ordNum);
+                }
+               
+
+                odr.price = totalPrice;
+                odr.orderNumber = reference;
+                db.Entry(odr).State = EntityState.Modified;
+                db.OrderProducts.AddRange(orderItems);
+                db.SaveChanges();
+            }
+           
+
+            return Ok(odr.orderNumber);
         }
 
         // DELETE: api/Orders/5

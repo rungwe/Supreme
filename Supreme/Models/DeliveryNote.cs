@@ -11,6 +11,8 @@ namespace Supreme.Models
         [Key]
         public int id { set; get; }
 
+        public string deliveryNoteNumber { set; get; }
+
         public DateTime date { set; get; }
 
         [Required]

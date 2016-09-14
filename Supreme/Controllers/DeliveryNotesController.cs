@@ -21,6 +21,7 @@ namespace Supreme.Controllers
     public class DeliveryNotesController : ApiController
     {
         private ApplicationDbContext db = new ApplicationDbContext();
+        private static readonly object Lock = new object();
 
         // GET: api/DeliveryNotes
         /// <summary>
@@ -181,11 +182,12 @@ namespace Supreme.Controllers
                 return StatusCode(HttpStatusCode.ExpectationFailed);
             }
             //send delivery note email
-            string subject = "Supreme Brands Delivery Note";
+            string subject = "Supreme Brands Delivery Note (Delivery Note Number: "+deliveryNote.deliveryNoteNumber ;
             string body = "<html><head>";
             body += "<style> table {font - family: arial, sans - serif;border - collapse: collapse;width: 100 %; }td, th { border: 1px solid #dddddd; text - align: left; padding: 8px;} tr: nth - child(even) { background - color: #dddddd;}</style> ";
             body += "</head><body><h3>Dear Sir/Madama</h3><br><p>This servers as a delivery note for "+order.branch.customer.tradingName+" for the "+order.branch.name+"</p>";
-            body += "<h4>Order Number:      " + order.id + "</h4>";
+            body += "<h4>Order Number:      " + order.orderNumber + "</h4>";
+            body += "<h4>Delivery Note Number:      " + deliveryNote.deliveryNoteNumber + "</h4>";
             body += "<h4>Order Date:      " + order.date.ToShortDateString()+ "</h4><br>";
 
             body += "<table><tr><th> Order Item name </th> <th> Quantity </th> <th>Price per unit ($)</th> <th>Amount ($)</th> </tr>";
@@ -221,7 +223,7 @@ namespace Supreme.Controllers
             invoiceBody += "<tr> <td> <b>Total</b> </td><td> </td> <td>  </td><td> <b>" + total + "</b> </td></tr> </table>";
             invoiceBody += "<br><br>Kind Regards<br> Supreme Brands Sales</body></html>";
             
-            Email.sendEmail(order.branch.email, invoiceSubject, invoiceBody);
+            //Email.sendEmail(order.branch.email, invoiceSubject, invoiceBody);
 
             return Ok();
         }
@@ -243,12 +245,48 @@ namespace Supreme.Controllers
             }
             string reg = User.Identity.GetUserId();
             Driver driver = db.Drivers.Where(b => b.profile.userid == reg).SingleOrDefault();
-            DeliveryNote deliveryNote = new DeliveryNote() { orderId = deliveryNoteData.orderId,driverId=driver.id,date= DateTime.Now,status="pending" };
-            db.DeliveryNotes.Add(deliveryNote);
-            Order order =await db.Orders.FindAsync(deliveryNote.orderId);
-            order.status = "transit";
-            db.Entry(order).State = EntityState.Modified;
-            await db.SaveChangesAsync();
+            if (driver == null)
+            {
+                return BadRequest("Driver does not exist");
+            }
+            TimeZoneInfo timeInfo = TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time");
+            DateTime userTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeInfo);
+            DeliveryNote deliveryNote = new DeliveryNote() { orderId = deliveryNoteData.orderId,driverId=driver.id,date= userTime,status="pending" };
+
+
+            lock (Lock)
+            {
+
+                string year = DateTime.Now.Year.ToString();
+                string reference = "DN-" + year + "-";
+                int deliv = db.DeliveryNotes.Count();
+                if (deliv == 0)
+                {
+                    deliv += 1;
+                    reference += String.Format("{0:00000}", deliv);
+                }
+                else
+                {
+                    deliv = db.DeliveryNotes.Count(b => b.deliveryNoteNumber.Substring(3, 4) == year);
+                    deliv += 1;
+                    reference += String.Format("{0:00000}", deliv);
+                }
+                while (db.DeliveryNotes.Count(d => d.deliveryNoteNumber == reference) != 0)
+                {
+                    reference = "INV-" + year + "-" + String.Format("{0:00000}", ++deliv);
+                }
+
+
+                deliveryNote.deliveryNoteNumber = reference;
+                db.DeliveryNotes.Add(deliveryNote);
+                Order order = db.Orders.Find(deliveryNote.orderId);
+                order.status = "transit";
+                db.Entry(order).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+
+
+           
 
             return Ok();
         }

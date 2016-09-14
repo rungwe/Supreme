@@ -11,6 +11,8 @@ namespace Supreme.Models
 
         public string tradingName { set; get; }
 
+        public string reference { set; get; }
+
         public DateTime registrationDate { set; get; }
     }
 }

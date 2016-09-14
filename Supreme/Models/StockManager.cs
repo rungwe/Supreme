@@ -15,6 +15,8 @@ namespace Supreme.Models
 
         public int profileId { set; get; }
 
+        public string warehouseLocation { set; get; }
+
         public virtual Profile profile { set; get; }
 
         public virtual ICollection<Dispatch> dispaches { get; set; }

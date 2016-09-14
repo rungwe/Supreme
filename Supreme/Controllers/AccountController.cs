@@ -234,7 +234,7 @@ namespace Supreme.Controllers
             }
            
 
-            var user = new ApplicationUser() { UserName = model.Email, Email = model.Email };
+            var user = new ApplicationUser() { UserName = model.phonenumber, Email = model.Email,PhoneNumber=model.phonenumber };
 
             IdentityResult result = await UserManager.CreateAsync(user, Password);
 
@@ -257,6 +257,7 @@ namespace Supreme.Controllers
             }
             var person = db.Users.Where(b => b.Email == model.Email).First();
             // send email with password
+            /*
             string body = "<html><h3>Hi " + model.firstname + " " + model.lastname + "</h3><br><b>Your Login Credentials</b><br><br><b>username: </b> " + model.Email + "<br><b>password: </b> " + Password + "<br><br><br>you can always change the password in the app.<br><br>Kind regards<br>Supreme brands team</html>";
             if (!Email.sendEmail(model.Email, "Supreme Brands App details", body))
             {
@@ -266,8 +267,10 @@ namespace Supreme.Controllers
 
                 return StatusCode(HttpStatusCode.ExpectationFailed);
 
-            };
+            };**/
             string err = "";
+            TimeZoneInfo timeInfo = TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time");
+            DateTime userTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeInfo);
             Profile prof = new Profile()
             {
                 email = model.Email,
@@ -275,7 +278,7 @@ namespace Supreme.Controllers
                 lastname = model.lastname,
                 userid = person.Id,
                 position = model.role,
-                registrationDate = DateTime.Now,
+                registrationDate = userTime,
 
 
             };
@@ -299,6 +302,7 @@ namespace Supreme.Controllers
 
             if (model.role == "sales")
             {
+                
                 SalesRep sales = new SalesRep
                 {
                     profileId = prof.id,
@@ -361,9 +365,18 @@ namespace Supreme.Controllers
 
             else if (model.role == "merchant")
             {
+                SalesRep sales = new SalesRep
+                {
+                    profileId = prof.id,
+                    userid = person.Id
+                };
+
+                db.SalesReps.Add(sales);
+
                 Merchant manager = new Merchant
                 {
-                    profileId = prof.id
+                    profileId = prof.id,
+                    user_id = person.Id
 
                 };
 

@@ -12,7 +12,10 @@ namespace Supreme.Models
         [Required]
         public int orderid { set; get; }
        
-        [Required]
+       
         public string invoiceNumber { set; get; }
+
+        [Required]
+        public string warehouseLocation { set; get; }
     }
 }

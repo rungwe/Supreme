@@ -34,7 +34,8 @@ namespace Supreme.Controllers
                             {
                                  id = b.id,
                                  registrationDate= b.registrationDate,
-                                 tradingName = b.tradingName
+                                 tradingName = b.tradingName,
+                                 reference= b.reference
                             };
             return customers;
         }
@@ -89,7 +90,8 @@ namespace Supreme.Controllers
             {
                 id = customer.id,
                 registrationDate = customer.registrationDate,
-                tradingName = customer.tradingName
+                tradingName = customer.tradingName,
+                reference = customer.reference
             };
 
             return Ok(cus);
@@ -155,7 +157,8 @@ namespace Supreme.Controllers
             Customer customer = new Customer
             {
                 tradingName = customerData.tradingName,
-                registrationDate = DateTime.Now
+                registrationDate = DateTime.Now,
+                //reference = customerData.reference
             };
 
             db.Customers.Add(customer);

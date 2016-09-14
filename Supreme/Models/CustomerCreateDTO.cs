@@ -11,6 +11,8 @@ namespace Supreme.Models
         [Required]
         public string tradingName { set; get; }
 
+        //public string reference { set; get; }
+
 
     }
 }

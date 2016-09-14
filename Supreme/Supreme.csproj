@@ -245,17 +245,9 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Library\Email.cs" />
-    <Compile Include="Migrations\201608271343007_Initial.cs" />
-    <Compile Include="Migrations\201608271343007_Initial.Designer.cs">
-      <DependentUpon>201608271343007_Initial.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201608271753594_Initial2.cs" />
-    <Compile Include="Migrations\201608271753594_Initial2.Designer.cs">
-      <DependentUpon>201608271753594_Initial2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201609071343390_DeliveryNote_addOrders.cs" />
-    <Compile Include="Migrations\201609071343390_DeliveryNote_addOrders.Designer.cs">
-      <DependentUpon>201609071343390_DeliveryNote_addOrders.cs</DependentUpon>
+    <Compile Include="Migrations\201609140818578_initial.cs" />
+    <Compile Include="Migrations\201609140818578_initial.Designer.cs">
+      <DependentUpon>201609140818578_initial.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Accountant.cs" />
@@ -284,6 +276,7 @@
     <Compile Include="Models\InvoiceCreateDTO.cs" />
     <Compile Include="Models\InvoiceDTO.cs" />
     <Compile Include="Models\Merchant.cs" />
+    <Compile Include="Models\MerchantDTO.cs" />
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\OrderCreateDTO.cs" />
     <Compile Include="Models\OrderDTO.cs" />
@@ -381,14 +374,8 @@
     <Analyzer Include="..\packages\AWSSDK.SimpleEmail.3.1.4.4\analyzers\dotnet\cs\AWSSDK.SimpleEmail.CodeAnalysis.dll" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201608271343007_Initial.resx">
-      <DependentUpon>201608271343007_Initial.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608271753594_Initial2.resx">
-      <DependentUpon>201608271753594_Initial2.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201609071343390_DeliveryNote_addOrders.resx">
-      <DependentUpon>201609071343390_DeliveryNote_addOrders.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201609140818578_initial.resx">
+      <DependentUpon>201609140818578_initial.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

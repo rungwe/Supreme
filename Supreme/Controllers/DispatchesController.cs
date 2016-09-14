@@ -155,7 +155,7 @@ namespace Supreme.Controllers
         }
 
         /// <summary>
-        /// View all the dispatched orders, only the stock Manager
+        /// View all the dispatched orders
         /// </summary>
         /// <returns></returns>
         [ResponseType(typeof(ICollection<OrderDTO>))]

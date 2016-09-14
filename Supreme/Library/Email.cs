@@ -12,12 +12,13 @@ namespace Supreme.Library
     /// </summary>
     public class Email
     {
-        /// <summary>
-        /// send email method
-        /// </summary>
-        /// <param name="email"></param>
-        /// <param name="body"></param>
-        /// <returns></returns>
+       /// <summary>
+       /// send email method
+       /// </summary>
+       /// <param name="email"></param>
+       /// <param name="subject"></param>
+       /// <param name="body"></param>
+       /// <returns></returns>
         public static bool sendEmail(string email,string subject, string body)
         {
             var awsConfig = new AmazonSimpleEmailServiceConfig();
@@ -40,7 +41,7 @@ namespace Supreme.Library
 
             try
             {
-                SendEmailRequest ser = new SendEmailRequest("info@supremebrands.co.zw", dest, message);
+                SendEmailRequest ser = new SendEmailRequest("sales@supremebrands.co.zw", dest, message);
                 SendEmailResponse seResponse = awsClient.SendEmail(ser);
 
                 return true;

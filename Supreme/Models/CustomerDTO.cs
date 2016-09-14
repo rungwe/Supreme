@@ -12,12 +12,14 @@ namespace Supreme.Models
 
         public string tradingName { set; get; }
 
+        public string reference { set; get; }
+
         public DateTime registrationDate { set; get; }
 
         public virtual ICollection<BranchDTO> branches { get; set; }
 
         public virtual ICollection<OrderDTO> orders { get; set; }
 
-        public virtual ICollection<OrderDTO> prices { get; set; }
+        public virtual ICollection<ProductPrice> prices { get; set; }
     }
 }

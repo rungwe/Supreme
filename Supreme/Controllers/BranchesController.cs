@@ -37,8 +37,14 @@ namespace Supreme.Controllers
                                regionId = b.regionId,
                                telephone = b.telephone,
                                tradingName = b.customer.tradingName,
-                               customer = new CustomerDTO2 { id = b.customer.id, tradingName = b.customer.tradingName, registrationDate = b.customer.registrationDate }
-
+                               customer = new CustomerDTO2 { id = b.customer.id, tradingName = b.customer.tradingName, registrationDate = b.customer.registrationDate },
+                               branchManager=b.branchManager,
+                               location = b.location,
+                               monthlyBudget = b.monthlyBudget,
+                               telephone2 = b.telephone2,
+                               merchant = new MerchantDTO { id= b.merchantId, firstname=b.merchant.profile.firstname, lastname = b.merchant.profile.lastname, middlename= b.merchant.profile.middlename},
+                               salesRep = new SalesRepDTO { id = b.salesRepId, firstname= b.salesRep.profile.firstname, middlename = b.salesRep.profile.middlename, lastname= b.salesRep.profile.lastname}
+                               
 
                            };
             return branches;
@@ -67,7 +73,13 @@ namespace Supreme.Controllers
                 regionId = b.regionId,
                 telephone = b.telephone,
                 tradingName = b.customer.tradingName,
-                customer = new CustomerDTO2 { id = b.customer.id, tradingName = b.customer.tradingName, registrationDate = b.customer.registrationDate }
+                customer = new CustomerDTO2 { id = b.customer.id, tradingName = b.customer.tradingName, registrationDate = b.customer.registrationDate },
+                branchManager = b.branchManager,
+                location = b.location,
+                monthlyBudget = b.monthlyBudget,
+                telephone2 = b.telephone2,
+                merchant = new MerchantDTO { id = b.merchantId, firstname = b.merchant.profile.firstname, lastname = b.merchant.profile.lastname, middlename = b.merchant.profile.middlename },
+                salesRep = new SalesRepDTO { id = b.salesRepId, firstname = b.salesRep.profile.firstname, middlename = b.salesRep.profile.middlename, lastname = b.salesRep.profile.lastname }
 
 
             };
@@ -81,6 +93,8 @@ namespace Supreme.Controllers
         /// <param name="branchId"></param>
         /// <param name="salesRepId"></param>
         /// <returns></returns>
+        [Route("api/AssignSalesRep")]
+        [HttpPut]
         [ResponseType(typeof(void))]
         public async Task<IHttpActionResult> PutBranch(int branchId, int salesRepId)
         {
@@ -118,6 +132,54 @@ namespace Supreme.Controllers
             return StatusCode(HttpStatusCode.NoContent);
         }
 
+
+
+        /// <summary>
+        /// Assign a merchant to a branch
+        /// </summary>
+        /// <param name="branchId"></param>
+        /// <param name="merchantId"></param>
+        /// <returns></returns>
+        [Route("api/AssignMerchant")]
+        [ResponseType(typeof(void))]
+        [HttpPut]
+        public async Task<IHttpActionResult> AssignMerchant(int branchId, int merchantId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            Branch branch = await db.Branches.FindAsync(merchantId);
+            Merchant merchant = await db.Merchants.FindAsync(merchantId);
+
+            if (merchant == null)
+            {
+                return BadRequest("Merchant does not exist");
+            }
+
+
+            if (branch == null)
+            {
+                return BadRequest("branch does not exist");
+            }
+
+            branch.merchantId = merchantId;
+            db.Entry(branch).State = EntityState.Modified;
+
+            try
+            {
+                await db.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw;
+
+            }
+
+            return StatusCode(HttpStatusCode.NoContent);
+        }
+
+
         // POST: api/Branches
         /// <summary>
         /// Create a branch for a particular company, Accountants authorized
@@ -140,7 +202,12 @@ namespace Supreme.Controllers
                 email = branchData.email,
                 address = branchData.address,
                 telephone = branchData.telephone,
-                salesRepId = branchData.salesRepId
+                salesRepId = branchData.salesRepId,
+                merchantId = branchData.merchantId,
+                branchManager = branchData.branchManager,
+                monthlyBudget = branchData.monthlyBudget,
+                telephone2 = branchData.telephone2,
+                location = branchData.location
             };
 
             db.Branches.Add(branch);

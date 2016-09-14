@@ -15,6 +15,8 @@ namespace Supreme.Models
         [Required]
         public string tradingName { set; get; }
 
+        public string reference { set; get; }
+
         [Required]
         public DateTime registrationDate { set; get; }
 
@@ -22,7 +24,7 @@ namespace Supreme.Models
 
         public virtual ICollection<Order> orders { get; set; }
 
-        public virtual ICollection<Order> prices { get; set; }
+        public virtual ICollection<ProductPrice> prices { get; set; }
 
     }
 }
