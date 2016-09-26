@@ -79,6 +79,12 @@ namespace Supreme.Controllers
             {
                 return BadRequest(ModelState);
             }
+            int count = await db.Regions.CountAsync(b => b.name == regionData.name);
+
+            if (count != 0)
+            {
+                return BadRequest("Region Exist already");
+            }
             Region region = new Region
             {
                 name = regionData.name

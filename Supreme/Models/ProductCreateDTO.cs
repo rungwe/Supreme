@@ -10,8 +10,7 @@ namespace Supreme.Models
     {
         [Required]
         public string name { set; get; }
-        [Required]
-        public string sku { set; get; }
+       
         [Required]
         public string description { set; get; }
 

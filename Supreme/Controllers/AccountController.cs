@@ -160,7 +160,8 @@ namespace Supreme.Controllers
                 lastname = model.lastname,
                 userid = person.Id,
                 position = "administrator",
-                registrationDate = DateTime.Now
+                registrationDate = DateTime.Now,
+                phone = model.phonenumber
             };
 
             db.Profiles.Add(prof);
@@ -279,6 +280,7 @@ namespace Supreme.Controllers
                 userid = person.Id,
                 position = model.role,
                 registrationDate = userTime,
+                phone = model.phonenumber
 
 
             };

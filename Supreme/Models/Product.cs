@@ -13,7 +13,7 @@ namespace Supreme.Models
         
         public string name { set; get; }
 
-        public string sku { set; get; }
+        //public string sku { set; get; }
 
         public string description { set; get; }
 

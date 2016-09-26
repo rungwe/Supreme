@@ -42,33 +42,61 @@ namespace Supreme.Controllers
 
         // GET: api/Customers
         /// <summary>
-        /// Retrieves the customer branches associated with the current logged in Sales Rep, Sales Rep Authorized
+        /// Retrieves the customer branches associated with the current logged in Sales Rep or merchant, Sales Rep and Merchants Authorized
         /// </summary>
         /// <returns>200</returns>
         [Route("api/GetMyCustomers")]
         [HttpGet]
-        [Authorize(Roles ="sales")]
+        [Authorize(Roles ="sales,merchant")]
         public IQueryable<BranchDTO2> GetMyCustomers()
         {
             string user = User.Identity.GetUserId();
 
+            Merchant merchant = db.Merchants.Where(b => b.user_id == user).SingleOrDefault();
+
             int salesId = db.SalesReps.Where(b=>b.userid==user).SingleOrDefault().id;
+            if (merchant == null)
+            {
+                var branches = from b in db.Branches.Where(b => b.salesRepId == salesId)
+                               select new BranchDTO2
+                               {
+                                   id = b.id,
+                                   name = b.name,
+                                   address = b.address,
+                                   email = b.email,
+                                   regionId = b.regionId,
+                                   telephone = b.telephone,
+                                   tradingName = b.customer.tradingName,
+                                   customer = new CustomerDTO2 { id = b.customer.id, tradingName = b.customer.tradingName, registrationDate = b.customer.registrationDate },
+                                   location = b.location,
+                                   branchManager =b.branchManager,
+                                   
+
+
+                               };
+                return branches;
+            }
+            else
+            {
+                var branches = from b in db.Branches.Where(b => b.merchantId == merchant.id)
+                               select new BranchDTO2
+                               {
+                                   id = b.id,
+                                   name = b.name,
+                                   address = b.address,
+                                   email = b.email,
+                                   regionId = b.regionId,
+                                   telephone = b.telephone,
+                                   tradingName = b.customer.tradingName,
+                                   customer = new CustomerDTO2 { id = b.customer.id, tradingName = b.customer.tradingName, registrationDate = b.customer.registrationDate },
+                                   location = b.location,
+                                   branchManager = b.branchManager,
+
+
+                               };
+                return branches;
+            }
             
-            var branches = from b in db.Branches.Where(b=>b.salesRepId==salesId)
-                            select new BranchDTO2
-                            {
-                                id = b.id,
-                                name = b.name,
-                                address = b.address,
-                                email= b.email,
-                                regionId=b.regionId,
-                                telephone = b.telephone,
-                                tradingName = b.customer.tradingName,
-                                customer =  new CustomerDTO2 { id=b.customer.id,tradingName=b.customer.tradingName,registrationDate=b.customer.registrationDate}
-                                
-                                
-                            };
-            return branches;
         }
 
         // GET: api/Customers/5

@@ -185,7 +185,8 @@ namespace Supreme.Controllers
             string subject = "Supreme Brands Delivery Note (Delivery Note Number: "+deliveryNote.deliveryNoteNumber ;
             string body = "<html><head>";
             body += "<style> table {font - family: arial, sans - serif;border - collapse: collapse;width: 100 %; }td, th { border: 1px solid #dddddd; text - align: left; padding: 8px;} tr: nth - child(even) { background - color: #dddddd;}</style> ";
-            body += "</head><body><h3>Dear Sir/Madama</h3><br><p>This servers as a delivery note for "+order.branch.customer.tradingName+" for the "+order.branch.name+"</p>";
+            body += "</head><body><h3>Dear Sir/Madama</h3><br><p>This serves as a delivery note for "+order.branch.customer.tradingName+" for the "+order.branch.name+" branch.</p>";
+            body += "<h4>Invoice Number:      " + order.invoiceNumber + "</h4>";
             body += "<h4>Order Number:      " + order.orderNumber + "</h4>";
             body += "<h4>Delivery Note Number:      " + deliveryNote.deliveryNoteNumber + "</h4>";
             body += "<h4>Order Date:      " + order.date.ToShortDateString()+ "</h4><br>";
@@ -200,8 +201,11 @@ namespace Supreme.Controllers
             }
             body += "<tr> <td> <b>Total</b> </td><td> </td> <td>  </td><td> <b>" + total+ "</b> </td></tr> </table>";
             body += "<br><br>Kind Regards<br> Supreme Brands Sales</body></html>";
-           
-            Email.sendEmail(order.branch.email, subject, body);
+            if (order.branch.email != null)
+            {
+                Email.sendEmail(order.branch.email, subject, body);
+            }
+            
 
             //send invoice email
 

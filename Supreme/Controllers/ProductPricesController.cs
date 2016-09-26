@@ -18,9 +18,17 @@ namespace Supreme.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: api/ProductPrices
-        public IQueryable<ProductPrice> GetProductPrices()
+        public IQueryable<ProductPricingDTO> GetProductPrices()
         {
-            return db.ProductPrices;
+            return from b in db.ProductPrices
+                   select new ProductPricingDTO {
+                       id= b.id,
+                       amount = b.amount,
+                       customerId = b.customerId,
+                       description = b.description,
+                       productId = b.productId,
+                       sku = b.sku
+                   };
         }
 
         // GET: api/ProductPrices/5
@@ -29,15 +37,23 @@ namespace Supreme.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [ResponseType(typeof(ProductPrice))]
+        [ResponseType(typeof(ProductPricingDTO))]
         public async Task<IHttpActionResult> GetProductPrice(int id)
         {
-            ProductPrice productPrice = await db.ProductPrices.FindAsync(id);
-            if (productPrice == null)
+            ProductPrice b = await db.ProductPrices.FindAsync(id);
+            if (b == null)
             {
                 return NotFound();
             }
-
+            ProductPricingDTO productPrice = new ProductPricingDTO
+            {
+                id = b.id,
+                amount = b.amount,
+                customerId = b.customerId,
+                description = b.description,
+                productId = b.productId,
+                sku = b.sku
+            };
             return Ok(productPrice);
         }
 
@@ -88,7 +104,7 @@ namespace Supreme.Controllers
         /// </summary>
         /// <param name="productPriceData"></param>
         /// <returns></returns>
-        [Authorize(Roles ="accountant")]
+        [Authorize(Roles ="accountant,administrator")]
         [ResponseType(typeof(ProductPrice))]
         public async Task<IHttpActionResult> PostProductPrice(ProductPriceCreateDTO productPriceData)
         {
@@ -101,11 +117,20 @@ namespace Supreme.Controllers
             {
                 return BadRequest("Product Pricing already exists");
             }
+
+            count = db.ProductPrices.Count(b => b.sku == productPriceData.sku);
+            if (count != 0)
+            {
+                return BadRequest("Duplicate sku not allowed");
+            }
+
             ProductPrice productPrice = new ProductPrice
             {
                 customerId = productPriceData.customerId,
                 amount = productPriceData.amount,
-                productId = productPriceData.productId
+                productId = productPriceData.productId,
+                sku = productPriceData.sku,
+                description= productPriceData.description
             };
             db.ProductPrices.Add(productPrice);
             await db.SaveChangesAsync();

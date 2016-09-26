@@ -33,7 +33,8 @@ namespace Supreme.Controllers
                                                          id = b.product.id,
                                                          description = b.product.description,
                                                          productName = b.product.name,
-                                                         sku = b.product.sku
+                                                        
+                                                         sku = b.sku
                                                      };
 
             return productPrices;
@@ -121,16 +122,12 @@ namespace Supreme.Controllers
             {
                 return BadRequest(ModelState);
             }
-            int count = db.Products.Count(b => b.sku == productData.sku);
-            if (count != 0)
-            {
-                return BadRequest("Duplicate sku not allowed");
-            }
+            
             Product product = new Product
             {
                 name = productData.name,
                 description = productData.description,
-                sku = productData.sku,
+                //sku = productData.sku,
                 type = productData.type
             };
             db.Products.Add(product);

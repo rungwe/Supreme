@@ -278,7 +278,7 @@ namespace Supreme.Controllers
         /// </summary>
         /// <returns>200</returns>
         [ResponseType(typeof(ICollection<OrderDTO>))]
-        [Authorize(Roles = "stock_controller,administrator,accountant")]
+        [Authorize(Roles = "stock_controller")]
         [Route("api/StockControllerProcessingInDispatchOrders")]
         [HttpGet]
         public async Task<IHttpActionResult> StockControllerProcessingInDispatchOrders()
@@ -572,7 +572,7 @@ namespace Supreme.Controllers
         /// </summary>
         /// <param name="orderData"></param>
         /// <returns></returns>
-        [Authorize(Roles ="sales")]
+        [Authorize(Roles ="sales,merchant")]
         [ResponseType(typeof(void))]
         public async Task<IHttpActionResult> PostOrder(OrderCreateDTO orderData)
         {
@@ -637,7 +637,7 @@ namespace Supreme.Controllers
                 totalPrice += currentPrice*orderItem.quantity;
 
                 
-                orderItems.Add(new OrderProduct { orderId = odr.id, price = currentPrice, productId = orderItem.productId, quantity = orderItem.quantity });
+                orderItems.Add(new OrderProduct { orderId = odr.id, price = currentPrice, productId = orderItem.productId, quantity = orderItem.quantity,sku =price.sku });
                 //db.OrderProducts.
 
             }
@@ -703,22 +703,13 @@ namespace Supreme.Controllers
                     return Unauthorized();
                 }
             }
-            SalesRep sales1 = await db.SalesReps.FindAsync(order.salesRepId);
+            //SalesRep sales1 = await db.SalesReps.FindAsync(order.salesRepId);
 
-
-
-            if (order.status != "pending")
-            {
-                order.status = "cancelled";
-                db.Entry(order).State = EntityState.Modified;
-                await db.SaveChangesAsync();
-                return Ok();
-            }
-
-            db.Orders.Remove(order);
+            order.status = "cancelled";
+            db.Entry(order).State = EntityState.Modified;
             await db.SaveChangesAsync();
-
             return Ok();
+            
         }
 
         protected override void Dispose(bool disposing)

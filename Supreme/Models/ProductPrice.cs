@@ -17,6 +17,8 @@ namespace Supreme.Models
 
         public double amount { set; get; }
 
+        public string sku { set; get; }
+
         public string description { set; get; }
 
         public virtual Product product { set; get; }

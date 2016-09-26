@@ -10,5 +10,6 @@ namespace Supreme.Models
     {
         public int productId { set; get; }
         public int quantity { set; get; }
+        
     }
 }

@@ -86,6 +86,40 @@ namespace Supreme.Controllers
             return Ok(branch);
         }
 
+
+
+        /// <summary>
+        /// Gets the customer branch by using the customer id
+        /// </summary>
+        /// <param name="customerId"></param>
+        /// <returns>200</returns>
+        [ResponseType(typeof(ICollection<BranchDTO2>))]
+        public async Task<IHttpActionResult> GetCustomerBranch(int customerId)
+        {
+            
+            var branch =  from b in db.Branches.Where(b=>b.customerId==customerId) select new BranchDTO2
+            {
+                id = b.id,
+                name = b.name,
+                address = b.address,
+                email = b.email,
+                regionId = b.regionId,
+                telephone = b.telephone,
+                tradingName = b.customer.tradingName,
+                customer = new CustomerDTO2 { id = b.customer.id, tradingName = b.customer.tradingName, registrationDate = b.customer.registrationDate },
+                branchManager = b.branchManager,
+                location = b.location,
+                monthlyBudget = b.monthlyBudget,
+                telephone2 = b.telephone2,
+                merchant = new MerchantDTO { id = b.merchantId, firstname = b.merchant.profile.firstname, lastname = b.merchant.profile.lastname, middlename = b.merchant.profile.middlename },
+                salesRep = new SalesRepDTO { id = b.salesRepId, firstname = b.salesRep.profile.firstname, middlename = b.salesRep.profile.middlename, lastname = b.salesRep.profile.lastname }
+
+
+            };
+            return Ok(branch);
+        }
+
+
         // PUT: api/Branches/5
         /// <summary>
         /// Assign a sales rep to a branch

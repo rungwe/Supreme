@@ -18,9 +18,16 @@ namespace Supreme.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: api/Merchants
-        public IQueryable<Merchant> GetMerchants()
+        public IQueryable<MerchantDTO> GetMerchants()
         {
-            return db.Merchants;
+            return from b in db.Merchants select 
+                   new MerchantDTO {
+                       id =b.id,
+                       firstname = b.profile.firstname,
+                       lastname = b.profile.lastname,
+                       middlename = b.profile.middlename,
+                       
+                   };
         }
 
         // GET: api/Merchants/5
@@ -71,20 +78,7 @@ namespace Supreme.Controllers
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        // POST: api/Merchants
-        [ResponseType(typeof(Merchant))]
-        public async Task<IHttpActionResult> PostMerchant(Merchant merchant)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            db.Merchants.Add(merchant);
-            await db.SaveChangesAsync();
-
-            return CreatedAtRoute("DefaultApi", new { id = merchant.id }, merchant);
-        }
+       
 
         // DELETE: api/Merchants/5
         [ResponseType(typeof(Merchant))]

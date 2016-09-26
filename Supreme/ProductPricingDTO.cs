@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Supreme.Models
+namespace Supreme
 {
-    public class ProductPriceCreateDTO
+    public class ProductPricingDTO
     {
-        
-        
+        public int id { set; get; }
 
         public int productId { set; get; }
 
@@ -16,8 +15,8 @@ namespace Supreme.Models
 
         public double amount { set; get; }
 
-        public string description { get; set; }
-
         public string sku { set; get; }
+
+        public string description { set; get; }
     }
 }

@@ -149,6 +149,10 @@ namespace Supreme.Controllers
                             branch = new BranchDTO { id = d.order.branch.id, address = d.order.branch.address, name = d.order.branch.name, email = d.order.branch.email, regionId = d.order.branch.regionId, telephone = d.order.branch.telephone },
                             customer = new CustomerDTO { id = d.order.branch.customer.id, tradingName = d.order.branch.customer.tradingName, registrationDate = d.order.branch.customer.registrationDate },
                             date = d.order.date,
+                            orderNumber = d.order.orderNumber,
+                            price = d.order.price,
+                            invoiceNumber = d.order.invoiceNumber,
+                            warehouseLocation = d.order.warehouseLocation
                         };
 
             return Ok(order);
@@ -173,6 +177,10 @@ namespace Supreme.Controllers
                             branch = new BranchDTO { id = d.branch.id, address = d.branch.address, name = d.branch.name, email = d.branch.email, regionId = d.branch.regionId, telephone = d.branch.telephone },
                             customer = new CustomerDTO { id = d.branch.customer.id, tradingName = d.branch.customer.tradingName, registrationDate = d.branch.customer.registrationDate },
                             date = d.date,
+                            orderNumber= d.orderNumber,
+                            price = d.price,
+                            invoiceNumber = d.invoiceNumber,
+                            warehouseLocation = d.warehouseLocation
                         };
 
             return order;

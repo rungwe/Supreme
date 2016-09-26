@@ -24,5 +24,7 @@ namespace Supreme.Models
 
         [Required]
         public double price { set; get; }
+
+        public string sku { set; get; }
     }
 }
