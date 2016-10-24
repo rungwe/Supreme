@@ -25,6 +25,8 @@ namespace Supreme.Models
 
         public string invoiceNumber { set; get; }
 
+        public string invoiceUrl { set; get; }
+
 
 
     }

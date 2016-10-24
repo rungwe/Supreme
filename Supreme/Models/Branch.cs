@@ -46,5 +46,7 @@ namespace Supreme.Models
 
         public virtual Merchant merchant { get; set; }
 
+        public virtual Bank bank { get; set; }
+
     }
 }

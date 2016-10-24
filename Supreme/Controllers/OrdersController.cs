@@ -626,18 +626,34 @@ namespace Supreme.Controllers
                     return BadRequest("Product of id " + orderItem.productId + " does not Exist");
                 }
 
-                ProductPrice price = await db.ProductPrices.Where(b => b.productId == product.id && b.customerId == customer.id).SingleOrDefaultAsync();
+                BranchProductPrice priceBr = await db.BranchProductPrices.Where(b => b.productId == product.id && b.branchId == branch.id).SingleOrDefaultAsync();
+                ProductPrice priceCus = await db.ProductPrices.Where(b => b.productId == product.id && b.customerId == customer.id).SingleOrDefaultAsync();
 
-                if (price == null)
+
+                if (priceBr != null)
+                {
+                    currentPrice = priceBr.amount* priceBr.case_size;
+                    totalPrice += currentPrice * orderItem.quantity;
+
+
+                    orderItems.Add(new OrderProduct { orderId = odr.id, price = currentPrice, productId = orderItem.productId, quantity = orderItem.quantity, sku = priceBr.sku });
+                }
+                
+                else if(priceCus != null)
+                {
+                    currentPrice = priceCus.amount * priceCus.case_size;
+                    totalPrice += currentPrice * orderItem.quantity;
+
+
+                    orderItems.Add(new OrderProduct { orderId = odr.id, price = currentPrice, productId = orderItem.productId, quantity = orderItem.quantity, sku = priceCus.sku });
+                }
+
+                else
                 {
                     return BadRequest("This retailer does not have this product");
                 }
 
-                currentPrice = price.amount;
-                totalPrice += currentPrice*orderItem.quantity;
-
                 
-                orderItems.Add(new OrderProduct { orderId = odr.id, price = currentPrice, productId = orderItem.productId, quantity = orderItem.quantity,sku =price.sku });
                 //db.OrderProducts.
 
             }
@@ -711,6 +727,32 @@ namespace Supreme.Controllers
             return Ok();
             
         }
+
+        [HttpDelete]
+        [Route("api/clearOrders")]
+        public async Task<IHttpActionResult> ClearOrder()
+        {
+            // clear delivery notes
+            var deliveryNotes = db.DeliveryNotes;
+            db.DeliveryNotes.RemoveRange(deliveryNotes);
+
+            var invoice = db.Invoices;
+            db.Invoices.RemoveRange(invoice);
+
+            var products = db.OrderProducts;
+            db.OrderProducts.RemoveRange(products);
+
+            var orders = db.Orders;
+            db.Orders.RemoveRange(orders);
+
+            await db.SaveChangesAsync();
+
+            return Ok();
+
+
+
+        }
+        
 
         protected override void Dispose(bool disposing)
         {

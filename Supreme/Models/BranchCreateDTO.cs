@@ -36,6 +36,9 @@ namespace Supreme.Models
 
         public int merchantId { set; get; }
 
+        [Required]
+        public int bankId { set; get; }
+
         
 
     }

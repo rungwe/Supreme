@@ -203,7 +203,7 @@ namespace Supreme.Controllers
             body += "<br><br>Kind Regards<br> Supreme Brands Sales</body></html>";
             if (order.branch.email != null)
             {
-                Email.sendEmail(order.branch.email, subject, body);
+                //Email.sendEmail(order.branch.email, subject, body);
             }
             
 
@@ -225,9 +225,42 @@ namespace Supreme.Controllers
                 
             }
             invoiceBody += "<tr> <td> <b>Total</b> </td><td> </td> <td>  </td><td> <b>" + total + "</b> </td></tr> </table>";
+            invoiceBody += "<br><p> <a href='"+invoice.invoiceUrl+"'>Click Here</a> to download the copy of the invoice</p>";
             invoiceBody += "<br><br>Kind Regards<br> Supreme Brands Sales</body></html>";
-            
-            //Email.sendEmail(order.branch.email, invoiceSubject, invoiceBody);
+
+            if (order.branch.email != null)
+            {
+                //Email.sendEmail(order.branch.email, invoiceSubject, invoiceBody);
+            }
+
+            //update vat
+            TimeZoneInfo timeInfo = TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time");
+            DateTime userTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeInfo);
+            Vat vat = new Vat()
+            {
+                date = userTime,
+                initialVat = total*0.15,
+                remainingVat = total * 0.15,
+                branch = order.branch,
+                invoice = invoice
+            };
+
+            db.Vats.Add(vat);
+
+            //update sales ledger
+            SalesLedger sale = new SalesLedger()
+            {
+                order = order,
+                date = userTime,
+                deliveryNote = deliveryNote
+
+            };
+            db.SalesLedgers.Add(sale);
+
+            //update debtors ledger
+
+            db.SaveChanges();
+
 
             return Ok();
         }

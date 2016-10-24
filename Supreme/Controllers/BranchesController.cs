@@ -43,9 +43,8 @@ namespace Supreme.Controllers
                                monthlyBudget = b.monthlyBudget,
                                telephone2 = b.telephone2,
                                merchant = new MerchantDTO { id= b.merchantId, firstname=b.merchant.profile.firstname, lastname = b.merchant.profile.lastname, middlename= b.merchant.profile.middlename},
-                               salesRep = new SalesRepDTO { id = b.salesRepId, firstname= b.salesRep.profile.firstname, middlename = b.salesRep.profile.middlename, lastname= b.salesRep.profile.lastname}
-                               
-
+                               salesRep = new SalesRepDTO { id = b.salesRepId, firstname= b.salesRep.profile.firstname, middlename = b.salesRep.profile.middlename, lastname= b.salesRep.profile.lastname},
+                               bank = b.bank
                            };
             return branches;
         }
@@ -79,7 +78,8 @@ namespace Supreme.Controllers
                 monthlyBudget = b.monthlyBudget,
                 telephone2 = b.telephone2,
                 merchant = new MerchantDTO { id = b.merchantId, firstname = b.merchant.profile.firstname, lastname = b.merchant.profile.lastname, middlename = b.merchant.profile.middlename },
-                salesRep = new SalesRepDTO { id = b.salesRepId, firstname = b.salesRep.profile.firstname, middlename = b.salesRep.profile.middlename, lastname = b.salesRep.profile.lastname }
+                salesRep = new SalesRepDTO { id = b.salesRepId, firstname = b.salesRep.profile.firstname, middlename = b.salesRep.profile.middlename, lastname = b.salesRep.profile.lastname },
+                bank = b.bank
 
 
             };
@@ -112,9 +112,8 @@ namespace Supreme.Controllers
                 monthlyBudget = b.monthlyBudget,
                 telephone2 = b.telephone2,
                 merchant = new MerchantDTO { id = b.merchantId, firstname = b.merchant.profile.firstname, lastname = b.merchant.profile.lastname, middlename = b.merchant.profile.middlename },
-                salesRep = new SalesRepDTO { id = b.salesRepId, firstname = b.salesRep.profile.firstname, middlename = b.salesRep.profile.middlename, lastname = b.salesRep.profile.lastname }
-
-
+                salesRep = new SalesRepDTO { id = b.salesRepId, firstname = b.salesRep.profile.firstname, middlename = b.salesRep.profile.middlename, lastname = b.salesRep.profile.lastname },
+                bank= b.bank
             };
             return Ok(branch);
         }
@@ -228,6 +227,12 @@ namespace Supreme.Controllers
                 return BadRequest(ModelState);
             }
 
+            Bank bank = await db.Banks.FindAsync(branchData.bankId);
+            if (bank == null)
+            {
+                return BadRequest("Bank not found");
+            }
+
             Branch branch = new Branch
             {
                 name = branchData.name,
@@ -241,7 +246,8 @@ namespace Supreme.Controllers
                 branchManager = branchData.branchManager,
                 monthlyBudget = branchData.monthlyBudget,
                 telephone2 = branchData.telephone2,
-                location = branchData.location
+                location = branchData.location,
+                bank = bank,
             };
 
             db.Branches.Add(branch);
@@ -249,6 +255,34 @@ namespace Supreme.Controllers
 
             return CreatedAtRoute("DefaultApi", new { id = branch.id }, branch);
         }
+
+        /// <summary>
+        /// Assign a bank for a branch
+        /// </summary>
+        /// <param name="branchId"></param>
+        /// <param name="bankId"></param>
+        /// <returns></returns>
+        [Route("api/assignBank")]
+        [HttpPut]
+        [ResponseType(typeof(void))]
+        public async Task<IHttpActionResult> AssignBank(int branchId, int bankId)
+        {
+            Bank bank = await db.Banks.FindAsync(bankId);
+            if (bank == null)
+            {
+                return BadRequest("Bank not found");
+            }
+            Branch branch = await db.Branches.FindAsync(branchId);
+            if (branch == null)
+            {
+                return BadRequest("Branch not found");
+            }
+            branch.bank = bank;
+            db.Entry(branch).State = EntityState.Modified;
+            await db.SaveChangesAsync();
+            return Ok();
+        }
+
 
         // DELETE: api/Branches/5
         /// <summary>

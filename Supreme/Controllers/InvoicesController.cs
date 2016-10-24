@@ -11,6 +11,8 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using Supreme.Models;
 using Microsoft.AspNet.Identity;
+using Supreme.Library;
+using System.IO;
 
 namespace Supreme.Controllers
 {
@@ -187,11 +189,11 @@ namespace Supreme.Controllers
             // critical section generate invoice number
             lock (Lock)
             {
-                
+
                 string year = DateTime.Now.Year.ToString();
-                string reference = "INV-"+year+"-";
+                string reference = "INV-" + year + "-";
                 int invo = db.Invoices.Count();
-                if(invo == 0)
+                if (invo == 0)
                 {
                     invo += 1;
                     reference += String.Format("{0:00000}", invo);
@@ -204,7 +206,7 @@ namespace Supreme.Controllers
                 }
                 while (db.Invoices.Count(d => d.invoiceNumber == reference) != 0)
                 {
-                    reference = "INV-" + year + "-"+ String.Format("{0:00000}", ++invo); 
+                    reference = "INV-" + year + "-" + String.Format("{0:00000}", ++invo);
                 }
                 order.status = "processing";
                 order.warehouseLocation = invoiceData.warehouseLocation;
@@ -213,9 +215,46 @@ namespace Supreme.Controllers
                 invoice.invoiceNumber = reference;
                 db.Invoices.Add(invoice);
                 db.SaveChanges();
-
             }
 
+            InvoiceGenerator inv = new InvoiceGenerator();
+            Stream invPdf = inv.CreateInvoicePDF(order);
+            FileDTO file;
+            string filename = Guid.NewGuid().ToString()+ "invoice.pdf";
+
+            string bucket = "supremebrands";
+
+            StringWriter s = new StringWriter();
+
+            if (S3Bucket.UploadFileToS3(filename, invPdf, bucket))
+            {
+                file = new FileDTO() { url = "https://s3-us-west-2.amazonaws.com/supremebrands/" + filename };
+
+                string body = string.Format(@"
+                <!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01//EN""      ""http://www.w3.org/TR/html4/strict.dtd"">
+                <html>
+                <body>
+                    <h2> Dear sir/madam</h2>
+                    <br>
+                    <p>This email contains the link of the Invoice pdf created by the system</p>
+                    <p><a href='{0}'>Click here</a> to open the pdf </p>
+                    <p>Or copy and paste this link in your browser </p>
+                    <p>{1}</p>
+                    <br>
+                    <p>Kind Regards</p>
+                    
+                     <p>Supreme Brands Team<p>
+    
+                    
+                </body>
+                </html>
+                ", file.url, file.url);
+
+                Email.sendEmail("dasvalue@gmail.com", "invoice "+order.invoiceNumber, body);
+                invoice.invoiceUrl = file.url;
+                db.Entry(invoice).State = EntityState.Modified;
+                db.SaveChanges();
+            }
             
 
             return Ok(invoice.invoiceNumber);

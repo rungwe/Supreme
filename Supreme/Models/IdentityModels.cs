@@ -65,5 +65,13 @@ namespace Supreme.Models
         public System.Data.Entity.DbSet<Supreme.Models.Return> Returns { get; set; }
 
         public System.Data.Entity.DbSet<Supreme.Models.OrderProduct> OrderProducts { get; set; }
+
+        public System.Data.Entity.DbSet<Supreme.Models.Bank> Banks { get; set; }
+
+        public System.Data.Entity.DbSet<Supreme.Models.BranchProductPrice> BranchProductPrices { get; set; }
+
+        public System.Data.Entity.DbSet<Supreme.Models.Vat> Vats { get; set; }
+
+        public System.Data.Entity.DbSet<Supreme.Models.SalesLedger> SalesLedgers { get; set; }
     }
 }

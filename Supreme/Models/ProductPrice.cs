@@ -23,6 +23,7 @@ namespace Supreme.Models
 
         public virtual Product product { set; get; }
 
+        public int case_size { set; get; }
 
     }
 }

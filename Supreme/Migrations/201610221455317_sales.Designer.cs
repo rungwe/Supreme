@@ -7,18 +7,18 @@ namespace Supreme.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class ProductFix : IMigrationMetadata
+    public sealed partial class sales : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(ProductFix));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(sales));
         
         string IMigrationMetadata.Id
         {
-            get { return "201609141158318_Product-Fix"; }
+            get { return "201610221455317_sales"; }
         }
         
         string IMigrationMetadata.Source
         {
-            get { return Resources.GetString("Source"); }
+            get { return null; }
         }
         
         string IMigrationMetadata.Target

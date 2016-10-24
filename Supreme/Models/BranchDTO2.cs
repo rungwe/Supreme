@@ -34,5 +34,7 @@ namespace Supreme.Models
         public SalesRepDTO salesRep { set; get; }
 
         public CustomerDTO2 customer { set; get; }
+
+        public Bank bank { set; get; }
     }
 }

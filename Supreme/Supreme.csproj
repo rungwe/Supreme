@@ -59,6 +59,10 @@
       <HintPath>..\packages\AWSSDK.SimpleEmail.3.1.4.4\lib\net45\AWSSDK.SimpleEmail.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="itextsharp, Version=5.5.9.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\packages\iTextSharp.5.5.9\lib\itextsharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
@@ -223,13 +227,17 @@
     <Compile Include="Controllers\AccountantsController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AdministratorsController.cs" />
+    <Compile Include="Controllers\AnalyticsController.cs" />
+    <Compile Include="Controllers\BanksController.cs" />
     <Compile Include="Controllers\BranchesController.cs" />
+    <Compile Include="Controllers\BranchProductPricesController.cs" />
     <Compile Include="Controllers\CustomersController.cs" />
     <Compile Include="Controllers\DeliveryNotesController.cs" />
     <Compile Include="Controllers\DispatchesController.cs" />
     <Compile Include="Controllers\DriversController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\InvoicesController.cs" />
+    <Compile Include="Controllers\InvoiceTestController.cs" />
     <Compile Include="Controllers\MerchantsController.cs" />
     <Compile Include="Controllers\OrderProductsController.cs" />
     <Compile Include="Controllers\OrdersController.cs" />
@@ -238,16 +246,21 @@
     <Compile Include="Controllers\ProfilesController.cs" />
     <Compile Include="Controllers\RegionsController.cs" />
     <Compile Include="Controllers\ReturnsController.cs" />
+    <Compile Include="Controllers\SalesLedgersController.cs" />
     <Compile Include="Controllers\SalesRepsController.cs" />
     <Compile Include="Controllers\StockManagersController.cs" />
     <Compile Include="Controllers\UploadsController.cs" />
+    <Compile Include="Controllers\VatController.cs" />
+    <Compile Include="design.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Library\Email.cs" />
-    <Compile Include="Migrations\201609141158318_Product-Fix.cs" />
-    <Compile Include="Migrations\201609141158318_Product-Fix.Designer.cs">
-      <DependentUpon>201609141158318_Product-Fix.cs</DependentUpon>
+    <Compile Include="Library\InvoiceGenerator.cs" />
+    <Compile Include="Library\S3Bucket.cs" />
+    <Compile Include="Migrations\201610221455317_sales.cs" />
+    <Compile Include="Migrations\201610221455317_sales.Designer.cs">
+      <DependentUpon>201610221455317_sales.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Accountant.cs" />
@@ -255,10 +268,13 @@
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Administrator.cs" />
+    <Compile Include="Models\Bank.cs" />
     <Compile Include="Models\Branch.cs" />
     <Compile Include="Models\BranchCreateDTO.cs" />
     <Compile Include="Models\BranchDTO.cs" />
     <Compile Include="Models\BranchDTO2.cs" />
+    <Compile Include="Models\BranchProductCreateDTO.cs" />
+    <Compile Include="Models\BranchProductPrice.cs" />
     <Compile Include="Models\Customer.cs" />
     <Compile Include="Models\CustomerCreateDTO.cs" />
     <Compile Include="Models\CustomerDTO.cs" />
@@ -278,6 +294,7 @@
     <Compile Include="Models\Merchant.cs" />
     <Compile Include="Models\MerchantDTO.cs" />
     <Compile Include="Models\Order.cs" />
+    <Compile Include="Models\orderAnalytics.cs" />
     <Compile Include="Models\OrderCreateDTO.cs" />
     <Compile Include="Models\OrderDTO.cs" />
     <Compile Include="Models\OrderItem.cs" />
@@ -292,11 +309,13 @@
     <Compile Include="Models\Region.cs" />
     <Compile Include="Models\RegionDTO.cs" />
     <Compile Include="Models\Return.cs" />
+    <Compile Include="Models\SalesLedger.cs" />
     <Compile Include="Models\SalesRep.cs" />
     <Compile Include="Models\SalesRepDTO.cs" />
     <Compile Include="Models\StockManagerDTO.cs" />
     <Compile Include="Models\StockManager.cs" />
-    <Compile Include="ProductPricingDTO.cs" />
+    <Compile Include="Models\ProductPricingDTO.cs" />
+    <Compile Include="Models\Vat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ApplicationOAuthProvider.cs" />
     <Compile Include="Results\ChallengeResult.cs" />
@@ -375,8 +394,8 @@
     <Analyzer Include="..\packages\AWSSDK.SimpleEmail.3.1.4.4\analyzers\dotnet\cs\AWSSDK.SimpleEmail.CodeAnalysis.dll" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201609141158318_Product-Fix.resx">
-      <DependentUpon>201609141158318_Product-Fix.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201610221455317_sales.resx">
+      <DependentUpon>201610221455317_sales.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

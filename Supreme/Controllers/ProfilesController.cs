@@ -67,6 +67,17 @@ namespace Supreme.Controllers
                 return NotFound();
             }
 
+            // role fix
+            /*
+            if(profile.position == "merchant")
+            {
+                profile.position = "sales";
+            }
+
+            else if (profile.position == "sales")
+            {
+                profile.position = "merchant";
+            }**/
 
             return Ok(profile);
         }

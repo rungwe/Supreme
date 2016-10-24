@@ -1,27 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 
 namespace Supreme.Models
 {
-    public class ProductPriceCreateDTO
+    public class ProductPricingDTO
     {
-        
-        
-        [Required]
+        public int id { set; get; }
+
         public int productId { set; get; }
-        [Required]
+
         public int customerId { set; get; }
-        [Required]
+
         public double amount { set; get; }
 
-        public string description { get; set; }
-        [Required]
         public string sku { set; get; }
 
-        [Required]
-        public int case_size { get; set; } 
+        public string description { set; get; }
     }
 }

@@ -205,7 +205,7 @@ namespace Supreme.Controllers
         public async Task<IHttpActionResult> DeleteCustomer(int id)
         {
             return StatusCode(HttpStatusCode.NotImplemented);
-            /**
+            /*
             Customer customer = await db.Customers.FindAsync(id);
             if (customer == null)
             {
